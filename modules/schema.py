@@ -2,6 +2,16 @@ from pydantic import BaseModel
 from datetime import datetime
 import pandas as pd
 from pathlib import Path
+import logging
+from rich.logging import RichHandler
+from rich.prompt import Prompt
+
+
+FORMAT = "%(message)s"
+logging.basicConfig(
+    level="NOTSET", format=FORMAT, datefmt="[%X]", handlers=[RichHandler()]
+)
+log = logging.getLogger("rich")
 
 
 class MetMast(BaseModel):
@@ -18,31 +28,42 @@ class MetMast(BaseModel):
     vertical_anemo_heights: list | None = None
     presipitation_names: list | None = None
     presipitation_heights: list | None = None
-    date_type: str | None = None
+    data_type: str | None = None
     timeseries_path: Path | None = None
     timeseries_skiprows: list | None = None
     timeseries_header: int | None = None
     timeseries_index_col: str | None = None
     timeseries: list | None = None
 
-    def load_timeseries(self):
+    def load_timeseries_file(self, file):
         """
         Read raw data files and save them in the class
         """
-        pass
         df = pd.read_csv(
-            self.timeseries_path.joinpath("VC23254_Stranoch_PMMS2_DATA_10MIN.dat"),
+            file,
             header=self.timeseries_header,
             skiprows=self.timeseries_skiprows,
             index_col=self.timeseries_index_col,
+            low_memory=False,
         )
-        self.timeseries = df
+        # self.timeseries = df
+        return df
 
-    def load_timeseries_folder(self):
+    def load_timeseries_from_folder(self):
         """
         Read all files in a folder and merge them in one time series. Save this timeseries in the class
         """
-        pass
+        folder = Path(self.timeseries_path)
+        list_of_dfs = []
+        for file in folder.glob(f"*.{self.data_type}"):
+            log.info(f"Working on {file.name}")
+            df = self.load_timeseries_file(file)
+            list_of_dfs.append(df)
+        try:
+            self.timeseries = pd.concat(list_of_dfs)
+            log.info(f"All data from {folder} have been succesfully loaded")
+        except Exception as ex:
+            log.error(f"{ex}")
 
     def IEC_filtering(self):
         """
