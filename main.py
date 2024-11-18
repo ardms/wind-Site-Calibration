@@ -6,12 +6,10 @@ Created on 2024/11/18
 """
 
 # from textual.app import App
-from pathlib import Path
-import json
 import logging
-from modules.schema import MetMast, Site
+import json
 from rich.logging import RichHandler
-from rich.prompt import Prompt
+from modules.schema import MetMast, Site
 
 
 FORMAT = "%(message)s"
@@ -34,5 +32,5 @@ PMM_T03.calculate_alpha(low_wind, high_wind)
 PMM_T03.calculate_TI()
 
 PMM_T03_filter = conf["PMM"]["filter"]
-PMM_T03.filter_timeseries(PMM_T03_filter)
+PMM_T03.filter_timeseries_IEC(PMM_T03_filter)
 breakpoint()

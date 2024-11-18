@@ -1,12 +1,11 @@
-from pydantic import BaseModel
-from datetime import datetime
-import numpy as np
-import pandas as pd
-from pathlib import Path
 import re
+import pandas as pd
+import numpy as np
 import logging
 from rich.logging import RichHandler
-from rich.prompt import Prompt
+from pydantic import BaseModel
+from pathlib import Path
+from datetime import datetime
 
 
 FORMAT = "%(message)s"
@@ -101,7 +100,7 @@ class MetMast(BaseModel):
 
         self.timeseries = df
 
-    def filter_timeseries(self, Filter):
+    def filter_timeseries_IEC(self, Filter):
         """
         Filtering met mast dataset based on IEC 61400-12-1 spesifications for site calibrations
         1 (NumSamplesInterval_avg_PMM2 == 600)
@@ -125,13 +124,6 @@ class MetMast(BaseModel):
         DirAvgMax = Filter["DirAvgMax"][1]
         DirNumSamples = Filter["DirNumSamples"]
         TempMin = Filter["TempMin"]
-        # InflowAngleMin = Filter["InflowAngleMin"]
-        # InflowAngleMax = Filter["InflowAngleMax"]
-        # TurbulanceIntencityMin = Filter["TurbulanceIntencityMin"]
-        # TurbulanceIntencityMax = Filter["TurbulanceIntencityMax"]
-        # AlphaMin = Filter["AlphaMin"]
-        # AlphaMax = Filter["AlphaMax"]
-        # PrecipitationMax = Filter["PrecipitationMax"]
 
         df = self.timeseries
 
@@ -140,28 +132,50 @@ class MetMast(BaseModel):
         dir_columns = [i for i in df.columns if re.match("dir._num", i)]
         # wind_columns = [i for i in df.columns if re.match("v._Avg", i)]
 
-        df["filter"] = 0
+        df["filter_samples"] = 0
+        df["filter_samples_dir"] = 0
+        df["filter_temp_hum"] = 0
+        df["filter_wind"] = 0
+        df["filter_sector"] = 0
 
         # NOTE this is number 1 filtering
-        df.loc[df["NumSamplesInterval"] < NumSamplesInterval, "filter"] = 1
+        df.loc[df["NumSamplesInterval"] < NumSamplesInterval, "filter_samples"] = 1
 
         # NOTE this is number 2 filtering
         for dir_column in dir_columns:
-            df.loc[df[dir_column] < DirNumSamples, "filter"] = 2
+            df.loc[df[dir_column] < DirNumSamples, "filter_samples_dir"] = 1
 
         # NOTE this is number 3 filtering
-        df.loc[df["thb_t_Avg"] < TempMin, "filter"] = 3
+        df.loc[
+            (df["thb_t_Avg"] < TempMin) | (df["thb_h_Avg"] > 0.8), "filter_temp_hum"
+        ] = 1
 
         # NOTE this is number 4 filtering
         df.loc[
-            ((df[wind_col] < WindAvgMin) | (df[wind_col] > WindAvgMax)), "filter"
-        ] = 4
+            ((df[wind_col] < WindAvgMin) | (df[wind_col] > WindAvgMax)), "filter_wind"
+        ] = 1
 
         # NOTE this is number 5 filtering
-        df.loc[((df[dir_col] < DirAvgMin) | (df[dir_col] > DirAvgMax)), "filter"] = 5
+        df.loc[
+            ((df[dir_col] < DirAvgMin) | (df[dir_col] > DirAvgMax)), "filter_sector"
+        ] = 1
 
-        log.info(f"Filtering Base IEC has been applied {Filter}")
+        log.info(
+            f"Filtering Base IEC has been applied {"\n".join(f"{k} -- {v}" for k, v in Filter.items())}"
+        )
+
         self.timeseries = df
+
+    def filter_timeseries_add(self, Filter):
+        # InflowAngleMin = Filter["InflowAngleMin"]
+        # InflowAngleMax = Filter["InflowAngleMax"]
+        # TurbulanceIntencityMin = Filter["TurbulanceIntencityMin"]
+        # TurbulanceIntencityMax = Filter["TurbulanceIntencityMax"]
+        # AlphaMin = Filter["AlphaMin"]
+        # AlphaMax = Filter["AlphaMax"]
+        # PrecipitationMax = Filter["PrecipitationMax"]
+
+        pass
 
 
 class Site(BaseModel):
