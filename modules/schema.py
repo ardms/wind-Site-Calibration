@@ -76,15 +76,16 @@ class MetMast(BaseModel):
         numerator = np.where(
             df[high_wind[0]] > 0, np.log(df[low_wind[0]] / df[high_wind[0]]), np.nan
         )
-        df["a"] = numerator / np.log(low_wind[1] / high_wind[1])
-
+        df["alpha"] = numerator / np.log(low_wind[1] / high_wind[1])
         log.info(
             f"Wind shear exponent has been calculated using {low_wind} and {high_wind}"
         )
-
         self.timeseries = df
 
     def calculate_TI(self):
+        """
+        Calculate Turbulence Intesity as a ratio of avg value devided by the standard deviation
+        """
         df = self.timeseries
         columns = [i for i in df.columns if re.match("v._Avg", i)]
         for column in columns:
@@ -93,30 +94,34 @@ class MetMast(BaseModel):
             avg = f"{stem}_Avg"
             ti = f"{stem}_TI"
             df[ti] = df[avg] / df[std]
-
         log.info(
             f"Turbulence Intensity has been calculated for the following measurements {columns}"
         )
+        self.timeseries = df
+
+    def calculate_upflow(self):
+        """
+        Caluclate the upflow angle of wind speed using top a/m and vertical anemometer
+        The value is returned in rad from numpy but converted to degrees in the function
+        """
+        df = self.timeseries
+
+        df["upflow"] = np.arctan(df["v_vert_Avg"] / df["v1_Avg"])
+        df["upflow"] = df["upflow"] * 180 / np.pi
+
+        log.info(f"The uplow angle has been calculated for {self.name}")
 
         self.timeseries = df
 
     def filter_timeseries_IEC(self, Filter):
         """
-        Filtering met mast dataset based on IEC 61400-12-1 spesifications for site calibrations
+        Filtering met mast dataset based on IEC 61400-12-1 spesifications for site calibration
         1 (NumSamplesInterval_avg_PMM2 == 600)
         2 (DirNumSamples > 595)
         3 (Temperature > 2 C & Humidity < 80%)
         4 (Mean wind speed <= 4 & >= 16 m/s)
         5 (Measurement sector <=206.6 >=6.9
-
-        3 (V1_avg_CMM2_cor >= 4 & V1_avg_CMM2_cor <= 16)
-        4 (Dir1_avg_PMM2 >= 206.6 | Dir1_avg_PMM2 <= 6.9)
-        5 (inflow_angle_PMM >= -2 & inflow_angle_PMM <= 2)
-        6 (TI_V1_PMM >= 0.06 & TI_V1_PMM <= 0.24)
-        7 (alpha_V1_V3_PMM >= 0 & alpha_V1_V3_PMM <= 0.5)
-        8 (Precipitation_avg_PMM2 < 10)
         """
-
         NumSamplesInterval = Filter["NumSamplesInterval"]
         WindAvgMin = Filter["WindAvgMin"][1]
         WindAvgMax = Filter["WindAvgMax"][1]
@@ -124,6 +129,7 @@ class MetMast(BaseModel):
         DirAvgMax = Filter["DirAvgMax"][1]
         DirNumSamples = Filter["DirNumSamples"]
         TempMin = Filter["TempMin"]
+        HumidityMax = Filter["HumidityMax"]
 
         df = self.timeseries
 
@@ -147,7 +153,8 @@ class MetMast(BaseModel):
 
         # NOTE this is number 3 filtering
         df.loc[
-            (df["thb_t_Avg"] < TempMin) | (df["thb_h_Avg"] > 0.8), "filter_temp_hum"
+            (df["thb_t_Avg"] < TempMin) | (df["thb_h_Avg"] > HumidityMax),
+            "filter_temp_hum",
         ] = 1
 
         # NOTE this is number 4 filtering
@@ -167,33 +174,58 @@ class MetMast(BaseModel):
         self.timeseries = df
 
     def filter_timeseries_add(self, Filter):
-        # InflowAngleMin = Filter["InflowAngleMin"]
-        # InflowAngleMax = Filter["InflowAngleMax"]
-        # TurbulanceIntencityMin = Filter["TurbulanceIntencityMin"]
-        # TurbulanceIntencityMax = Filter["TurbulanceIntencityMax"]
-        # AlphaMin = Filter["AlphaMin"]
-        # AlphaMax = Filter["AlphaMax"]
-        # PrecipitationMax = Filter["PrecipitationMax"]
+        """
+        Apply additional filter as this is detailed in the Stranoch reports
+        1 (inflow_angle_PMM >= -2 & inflow_angle_PMM <= 2)
+        2 (TI_V1_PMM >= 0.06 & TI_V1_PMM <= 0.24)
+        3 (alpha_V1_V3_PMM >= 0 & alpha_V1_V3_PMM <= 0.5)
+        4 (Precipitation_avg_PMM2 < 10)
+        """
+        InflowAngleMin = Filter["InflowAngleMin"]
+        InflowAngleMax = Filter["InflowAngleMax"]
+        TurbulanceIntencityMin = Filter["TurbulanceIntencityMin"]
+        TurbulanceIntencityMax = Filter["TurbulanceIntencityMax"]
+        AlphaMin = Filter["AlphaMin"]
+        AlphaMax = Filter["AlphaMax"]
+        PrecipitationMax = Filter["PrecipitationMax"]
 
-        pass
+        df = self.timeseries
+
+        df["filter_inflow"] = 0
+        df["filter_TI"] = 0
+        df["filter_alpha"] = 0
+
+        # NOTE this is number 1 filtering
+        df.loc[
+            (df["upflow"] < InflowAngleMin) | (df["upflow"] > InflowAngleMax),
+            "filter_inflow",
+        ] = 1
+
+        # NOTE this is number 2 filtering
+        df.loc[
+            (df[TurbulanceIntencityMin[0]] < TurbulanceIntencityMin[1])
+            | (df[TurbulanceIntencityMax[0]] < TurbulanceIntencityMax[1]),
+            "filter_TI",
+        ] = 1
+
+        # NOTE this is number 3 filtering
+        df.loc[
+            (df["alpha"] < AlphaMin) | (df["alpha"] > AlphaMax),
+            "filter_alpha",
+        ] = 1
+
+        # NOTE this is number 4 filtering
+        df.loc[
+            df["Precipitation"] > PrecipitationMax,
+            "filter_inflow",
+        ] = 1
+
+        self.timeseries = df
 
 
 class Site(BaseModel):
     id: int = pd.to_datetime("now").strftime("%Y%m%d%H%M%S")
     name: str
-    filter_NumSamplesInterval: int | None = None
-    filter_WindAvgMin: int | None = None
-    filter_WindAvgMax: int | None = None
-    filter_DirAvgMin: int | None = None
-    filter_DirAvgMax: int | None = None
-    filter_InflowAngleMin: int | None = None
-    filter_InflowAngleMax: int | None = None
-    filter_TurbulanceIntencityMin: int | None = None
-    filter_TurbulanceIntencityMax: int | None = None
-    filter_AlphaMin: int | None = None
-    filter_AlphaMax: int | None = None
-    filter_PrecipitationMin: int | None = None
-    filter_PrecipitationMax: int | None = None
     CMM: MetMast
     PMM: MetMast
 
