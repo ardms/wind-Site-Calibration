@@ -19,18 +19,13 @@ class MetMast(BaseModel):
     id: int = pd.to_datetime("now").strftime("%Y%m%d%H%M%S")
     name: str
     date_commission: datetime | None = None
-    anemo_names: list | None = None
-    anemo_heights: list | None = None
-    vanes_names: list | None = None
-    vanes_heights: list | None = None
-    thermo_names: list | None = None
-    thermo_heights: list | None = None
-    vertical_anemo_names: list | None = None
-    vertical_anemo_heights: list | None = None
+    anemometers: dict
+    vanes: dict
+    thermometers: dict
     presipitation_names: list | None = None
     presipitation_heights: list | None = None
     data_type: str | None = None
-    timeseries_path: Path | None = None
+    timeseries_path: Path
     timeseries_skiprows: list | None = None
     timeseries_header: int | None = None
     timeseries_index_col: str | None = None
@@ -52,7 +47,8 @@ class MetMast(BaseModel):
 
     def load_timeseries_from_folder(self):
         """
-        Read all files in a folder and merge them in one time series. Save this timeseries in the class
+        Read all files in a folder and merge them in one time series. Save this time series in the class
+        This function will also apply slopes and offsets for all instruments
         """
         folder = Path(self.timeseries_path)
         list_of_dfs = []
@@ -60,8 +56,22 @@ class MetMast(BaseModel):
             log.info(f"Working on {file.name}")
             df = self.load_timeseries_file(file)
             list_of_dfs.append(df)
+
+        df_concat = pd.concat(list_of_dfs)
+
+        # NOTE this little snippet will loop through all the relevant columns and apply slope and offset
+        for instrument in [self.anemometers, self.vanes, self.thermometers]:
+            for key in instrument:
+                stem = instrument[key]["name"]
+                columns = [stem + "_" + i for i in instrument[key]["suffix"]]
+                for col in columns:
+                    print(col)
+                    slope = instrument[key]["slope"]
+                    offset = instrument[key]["offset"]
+                    df_concat[col] = df_concat[col] * slope + offset
+
         try:
-            self.timeseries = pd.concat(list_of_dfs)
+            self.timeseries = df_concat
             log.info(f"All data from {folder} have been succesfully loaded")
         except Exception as ex:
             log.error(f"{ex}")
