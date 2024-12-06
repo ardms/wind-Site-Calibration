@@ -21,22 +21,23 @@ log = logging.getLogger("rich")
 with open("./config.json") as conf_file:
     conf = json.load(conf_file)
 
-PMM_T03 = MetMast(
-    name="PMM_T03",
-    anemometers=conf["PMM"]["anemometers"],
-    vanes=conf["PMM"]["vanes"],
-    thermometers=conf["PMM"]["thermometers"],
-    **conf["PMM"]["data"]
-)
-PMM_T03.load_timeseries_from_folder()
+for metmast in ["PMM", "CMM"]:
+    MM = MetMast(
+        name=f"{metmast}_T03",
+        anemometers=conf[metmast]["anemometers"],
+        vanes=conf[metmast]["vanes"],
+        thermometers=conf[metmast]["thermometers"],
+        **conf[metmast]["data"],
+    )
+    MM.load_timeseries_from_folder()
 
-PMM_T03.calculate_alpha(
-    conf["PMM"]["filter"]["AlphaLow"], conf["PMM"]["filter"]["AlphaHigh"]
-)
-PMM_T03.calculate_TI()
-PMM_T03.calculate_upflow()
+    MM.calculate_alpha(
+        conf[metmast]["filter"]["AlphaLow"], conf[metmast]["filter"]["AlphaHigh"]
+    )
+    MM.calculate_TI()
+    MM.calculate_upflow()
 
-PMM_T03_filter = conf["PMM"]["filter"]
-PMM_T03.filter_timeseries_IEC(PMM_T03_filter)
-PMM_T03.filter_timeseries_add(PMM_T03_filter)
-breakpoint()
+    MM_filter = conf[metmast]["filter"]
+    MM.filter_timeseries_IEC(MM_filter)
+    MM.filter_timeseries_add(MM_filter)
+    breakpoint()
