@@ -42,15 +42,15 @@ A [template](./config-template.json) is provided for that reason
 ## Data Filtering
 Filter raw measurement data using these IEC specified criteria:
 
-NumSamplesInterval_avg_PMM2 == 600
-DirNumSamples > 595
-Temperature > 2°C and Humidity < 80%
-Mean wind speed within range 4 to 16 m/s
-Measurement sector: Defined by the wake effects of the selected Turbine
+1. NumSamplesInterval_avg_PMM2 == 600
+2. DirNumSamples > 595
+3. Temperature > 2°C and Humidity < 80%
+4. Mean wind speed within range 4 to 16 m/s
+5. Measurement sector: Defined by the wake effects of the selected Turbine
 
-Additional filterig to be discussed on per case and as needed:
+Additional filtering to be discussed on per case and as needed:
 
-Inflow_angle_PMM within ±2°
-TI_V1_PMM between 6% and 24%
-Alpha_V1_V3_PMM between 0 and 0.5
-Precipitation_avg_PMM2 < 10mm
+1. Inflow_angle_PMM within ±2°
+2. TI_V1_PMM between 6% and 24%
+3. Alpha_V1_V3_PMM between 0 and 0.5
+4. Precipitation_avg_PMM2 < 10mm

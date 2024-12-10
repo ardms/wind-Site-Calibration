@@ -65,7 +65,7 @@ class MetMast(BaseModel):
                 stem = instrument[key]["name"]
                 columns = [stem + "_" + i for i in instrument[key]["suffix"]]
                 for col in columns:
-                    print(col)
+                    # print(col)
                     slope = instrument[key]["slope"]
                     offset = instrument[key]["offset"]
                     df_concat[col] = df_concat[col] * slope + offset
@@ -145,6 +145,11 @@ class MetMast(BaseModel):
 
         wind_col = Filter["WindAvgMin"][0]
         dir_col = Filter["DirAvgMin"][0]
+        temp_col = Filter["TempMin"][0]
+        try:
+            humidity_col = Filter["HumidityMax"][0]
+        except Exception as ex:
+            log.error(f"{ex}")
         dir_columns = [i for i in df.columns if re.match("dir._num", i)]
         # wind_columns = [i for i in df.columns if re.match("v._Avg", i)]
 
@@ -162,10 +167,16 @@ class MetMast(BaseModel):
             df.loc[df[dir_column] < DirNumSamples, "filter_samples_dir"] = 1
 
         # NOTE this is number 3 filtering
-        df.loc[
-            (df["thb_t_Avg"] < TempMin) | (df["thb_h_Avg"] > HumidityMax),
-            "filter_temp_hum",
-        ] = 1
+        if HumidityMax:
+            df.loc[
+                (df[temp_col] < TempMin[1]) | (df[humidity_col] > HumidityMax[1]),
+                "filter_temp_hum",
+            ] = 1
+        else:
+            df.loc[
+                (df[temp_col] < TempMin[1]),
+                "filter_temp_hum",
+            ] = 1
 
         # NOTE this is number 4 filtering
         df.loc[
@@ -225,10 +236,13 @@ class MetMast(BaseModel):
         ] = 1
 
         # NOTE this is number 4 filtering
-        df.loc[
-            df["Precipitation"] > PrecipitationMax,
-            "filter_inflow",
-        ] = 1
+        if PrecipitationMax:
+            df.loc[
+                df["Precipitation"] > PrecipitationMax,
+                "filter_inflow",
+            ] = 1
+        else:
+            log.info("No Precipitation filtering has been applied")
 
         self.timeseries = df
 

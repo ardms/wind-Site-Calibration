@@ -21,6 +21,7 @@ log = logging.getLogger("rich")
 with open("./config.json") as conf_file:
     conf = json.load(conf_file)
 
+met_masts = []
 for metmast in ["PMM", "CMM"]:
     MM = MetMast(
         name=f"{metmast}_T03",
@@ -40,4 +41,7 @@ for metmast in ["PMM", "CMM"]:
     MM_filter = conf[metmast]["filter"]
     MM.filter_timeseries_IEC(MM_filter)
     MM.filter_timeseries_add(MM_filter)
-    breakpoint()
+    met_masts.append(MM)
+
+site_name = Site(name="Stranoch", PMM=met_masts[0], CMM=met_masts[1])
+breakpoint()
