@@ -123,6 +123,44 @@ class MetMast(BaseModel):
 
         self.timeseries = df
 
+    def calculate_dir_bins(self, Filter):
+        df = self.timeseries
+        df["dir_bin"] = np.nan
+        Dir = Filter["Dir"]
+        for key, section in Dir.items():
+            DirAvgMin = section["Min"]
+            DirAvgMax = section["Max"]
+            dir_col = section["column_name"]
+            DirMin = 5 * round(DirAvgMin / 5)
+            if DirMin > DirAvgMax:
+                DirMax = 360 + DirAvgMax
+                rr = [i % 360 for i in range(int(DirMin), int(DirMax), 10)]
+                ii = 0
+                while ii < len(rr) - 1:
+                    angle_min = rr[ii]
+                    ii += 1
+                    angle_max = rr[ii]
+                    df.loc[
+                        (df[dir_col] > angle_min) & (df[dir_col] <= angle_max),
+                        "dir_bin",
+                    ] = angle_min
+            else:
+                DirMax = DirAvgMax
+                rr = [i % 360 for i in range(int(DirMin), int(DirMax), 10)]
+                ii = 0
+                while ii < len(rr) - 2:
+                    angle_min = rr[ii]
+                    ii += 1
+                    angle_max = rr[ii]
+                    df.loc[
+                        (df[dir_col] > angle_min) & (df[dir_col] <= angle_max),
+                        "dir_bin",
+                    ] = angle_min
+                df.loc[(df[dir_col] > rr[-2]) | (df[dir_col] <= rr[-1]), "dir_bin"] = (
+                    rr[-2]
+                )
+        self.timeseries = df
+
     def filter_timeseries_IEC(self, Filter):
         """
         Filtering met mast dataset based on IEC 61400-12-1 spesifications for site calibration
@@ -135,16 +173,14 @@ class MetMast(BaseModel):
         NumSamplesInterval = Filter["NumSamplesInterval"]
         WindAvgMin = Filter["WindAvgMin"][1]
         WindAvgMax = Filter["WindAvgMax"][1]
-        DirAvgMin = Filter["DirAvgMin"][1]
-        DirAvgMax = Filter["DirAvgMax"][1]
         DirNumSamples = Filter["DirNumSamples"]
         TempMin = Filter["TempMin"]
         HumidityMax = Filter["HumidityMax"]
+        Dir = Filter["Dir"]
 
         df = self.timeseries
 
         wind_col = Filter["WindAvgMin"][0]
-        dir_col = Filter["DirAvgMin"][0]
         temp_col = Filter["TempMin"][0]
         try:
             humidity_col = Filter["HumidityMax"][0]
@@ -184,9 +220,13 @@ class MetMast(BaseModel):
         ] = 1
 
         # NOTE this is number 5 filtering
-        df.loc[
-            ((df[dir_col] < DirAvgMin) | (df[dir_col] > DirAvgMax)), "filter_sector"
-        ] = 1
+        for key, aa in Dir.items():
+            DirAvgMin = aa["Min"]
+            DirAvgMax = aa["Max"]
+            dir_col = aa["column_name"]
+            df.loc[
+                ((df[dir_col] < DirAvgMin) | (df[dir_col] > DirAvgMax)), "filter_sector"
+            ] = 1
 
         log.info(
             f"Filtering Base IEC has been applied {"\n".join(f"{k} -- {v}" for k, v in Filter.items())}"
@@ -252,6 +292,14 @@ class Site(BaseModel):
     name: str
     CMM: MetMast
     PMM: MetMast
+    joined_timeseries: list | None = None
+
+    def join_timeseries(self):
+        """
+        Join the data from both met masts into one combined dataframe.
+        """
+        df = self.CMM.timeseries.join(self.PMM.timeseries, lsuffix="CMM", rsuffix="PMM")
+        self.joined_timeseries = df
 
     def site_calibration(self):
         """

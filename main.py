@@ -41,7 +41,9 @@ for metmast in ["PMM", "CMM"]:
     MM_filter = conf[metmast]["filter"]
     MM.filter_timeseries_IEC(MM_filter)
     MM.filter_timeseries_add(MM_filter)
+    MM.calculate_dir_bins(MM_filter)
     met_masts.append(MM)
 
 site_name = Site(name="Stranoch", PMM=met_masts[0], CMM=met_masts[1])
+site_name.join_timeseries()
 breakpoint()

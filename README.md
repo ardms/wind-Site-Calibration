@@ -54,3 +54,8 @@ Additional filtering to be discussed on per case and as needed:
 2. TI_V1_PMM between 6% and 24%
 3. Alpha_V1_V3_PMM between 0 and 0.5
 4. Precipitation_avg_PMM2 < 10mm
+
+## Direction
+As detailed in the IEC, the wind direction bin size shall be 10°.
+
+## Significance of shear
