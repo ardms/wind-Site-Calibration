@@ -16,6 +16,25 @@ log = logging.getLogger("rich")
 
 
 class MetMast(BaseModel):
+        """
+        A class representing a meteorological mast (Met Mast) with its associated data and methods for processing timeseries data.
+
+        Attributes:
+            id (int): Unique ID based on current timestamp.
+            name (str): Name of the Met Mast.
+            date_commission (datetime, optional): Commission date of the Met Mast.
+            anemometers (dict): Details of anemometers.
+            vanes (dict): Details of wind vanes.
+            thermometers (dict): Details of thermometers.
+            presipitation_names (list, optional): List of precipitation sensor names.
+            presipitation_heights (list, optional): List of precipitation sensor heights.
+            data_type (str, optional): Type of data files (e.g., 'csv').
+            timeseries_path (Path): Path to the directory containing timeseries data files.
+            timeseries_skiprows (list, optional): Rows to skip when reading timeseries data.
+            timeseries_header (int, optional): Header row index for timeseries data.
+            timeseries_index_col (str, optional): Column to set as index in timeseries data.
+            timeseries (list, optional): List to store the timeseries data after processing.
+    """
     id: int = pd.to_datetime("now").strftime("%Y%m%d%H%M%S")
     name: str
     date_commission: datetime | None = None
@@ -33,7 +52,13 @@ class MetMast(BaseModel):
 
     def load_timeseries_file(self, file):
         """
-        Read raw data files and save them in the class
+        Read a timeseries CSV file into a DataFrame with specified parameters.
+
+        Args:
+            file (str or Path): Path to the CSV file to be read.
+
+        Returns:
+            DataFrame: The timeseries data converted to float64 data type.
         """
         df = pd.read_csv(
             file,
@@ -47,8 +72,8 @@ class MetMast(BaseModel):
 
     def load_timeseries_from_folder(self):
         """
-        Read all files in a folder and merge them in one time series. Save this time series in the class
-        This function will also apply slopes and offsets for all instruments
+        Read all timeseries data files from a specified folder, merge them into a single DataFrame,
+        and apply calibration corrections (slopes and offsets) to the instrument data.
         """
         folder = Path(self.timeseries_path)
         list_of_dfs = []
@@ -69,17 +94,23 @@ class MetMast(BaseModel):
                     slope = instrument[key]["slope"]
                     offset = instrument[key]["offset"]
                     df_concat[col] = df_concat[col] * slope + offset
-
+                    if instrument == self.vanes:
+                        df_concat[col] = df_concat[col] % 360
         try:
             self.timeseries = df_concat
             log.info(f"All data from {folder} have been succesfully loaded")
         except Exception as ex:
-            log.error(f"{ex}")
+            log.error(f"{ex} timeseries has not been updated")
 
     def calculate_alpha(self, low_wind: (str, int), high_wind: (str, int)):
         """
-        Calculate alpha (wind shear exponent) value of the wind shear
-        based on the formula Vzi = Vh*(Zi/H)^a
+        Calculate the wind shear exponent (alpha) based on wind speed measurements at two different heights.
+        Formula Vzi = Vh*(Zi/H)^a
+
+        Args:
+            low_wind (tuple): A tuple containing the name of the column for lower height wind speed and its height.
+            high_wind (tuple): A tuple containing the name of the column for higher height wind speed and its height.
+
         Return: None but will overwrite self.timeseries
         """
         df = self.timeseries
@@ -94,7 +125,7 @@ class MetMast(BaseModel):
 
     def calculate_TI(self):
         """
-        Calculate Turbulence Intesity as a ratio of avg value devided by the standard deviation
+        Calculate Turbulence Intensity (TI) for each anemometer as the ratio of the standard deviation to the mean wind speed.
         """
         df = self.timeseries
         columns = [i for i in df.columns if re.match("v._Avg", i)]
@@ -124,6 +155,12 @@ class MetMast(BaseModel):
         self.timeseries = df
 
     def calculate_dir_bins(self, Filter):
+        """
+        Calculate directional bins based on wind direction data. As per IEC 61400-12-1 width of the bin is 10 Deg.
+
+        Args:
+            Filter (dict): A dictionary containing filtering parameters.
+        """
         df = self.timeseries
         df["dir_bin"] = np.nan
         Dir = Filter["Dir"]
@@ -168,7 +205,10 @@ class MetMast(BaseModel):
         2 (DirNumSamples > 595)
         3 (Temperature > 2 C & Humidity < 80%)
         4 (Mean wind speed <= 4 & >= 16 m/s)
-        5 (Measurement sector <=206.6 >=6.9
+        5 (Measurement sector <=DirMin >=DirMax
+
+        Args:
+            Filter (dict): A dictionary containing filtering parameters.
         """
         NumSamplesInterval = Filter["NumSamplesInterval"]
         WindAvgMin = Filter["WindAvgMin"][1]
@@ -241,6 +281,9 @@ class MetMast(BaseModel):
         2 (TI_V1_PMM >= 0.06 & TI_V1_PMM <= 0.24)
         3 (alpha_V1_V3_PMM >= 0 & alpha_V1_V3_PMM <= 0.5)
         4 (Precipitation_avg_PMM2 < 10)
+
+        Args:
+            Filter (dict): A dictionary containing additional filtering parameters.
         """
         InflowAngleMin = Filter["InflowAngleMin"]
         InflowAngleMax = Filter["InflowAngleMax"]
@@ -288,6 +331,16 @@ class MetMast(BaseModel):
 
 
 class Site(BaseModel):
+    """
+    A class representing a site with multiple Met Masts and methods for combining and analyzing their data.
+
+    Attributes:
+        id (int): Unique ID based on current timestamp.
+        name (str): Name of the Site.
+        CMM (MetMast): Central Met Mast object.
+        PMM (MetMast): Peripheral Met Mast object.
+        joined_timeseries (list, optional): List to store the joined timeseries data after processing.
+    """
     id: int = pd.to_datetime("now").strftime("%Y%m%d%H%M%S")
     name: str
     CMM: MetMast
@@ -298,8 +351,16 @@ class Site(BaseModel):
         """
         Join the data from both met masts into one combined dataframe.
         """
-        df = self.CMM.timeseries.join(self.PMM.timeseries, lsuffix="CMM", rsuffix="PMM")
+        df = self.CMM.timeseries.join(
+            self.PMM.timeseries, lsuffix="_CMM", rsuffix="_PMM"
+        )
         self.joined_timeseries = df
+
+    def linear_regression(self):
+        """
+        Linear regression using
+        """
+        pass
 
     def site_calibration(self):
         """
