@@ -1,221 +1,1250 @@
 {
-    "$id": "https://example.com/job-posting.schema.json",
-    "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "description": "Stranoch T03 Site calibration config file",
-    "type": "object",
-    "required": [
-        "title",
-        "company",
-        "filtering",
-        "properties"
-    ],
-    "PMM": {
-        "name": "",
-        "data": {
-            "data_type": "",
-            "timeseries_path": "",
-            "timeseries_skiprows": "",
-            "timeseries_header": "",
-            "timeseries_index_col": "",
-        },
-        "date_commission": "",
-        "height": "",
-        "altitude": "",
-        "latitude": "",
-        "longitube": "",
-        "filter": "",
-            "type": "",
-            "NumSamplesInterval": "",
-            "WindAvgMin": "",
-            "WindAvgMax": "",
-            "DirAvgMin": "",
-            "DirAvgMax": "",
-            "DirNumSamples": "",
-            "TempMin": "",
-            "HumidityMax": "",
-            "InflowAngleMin": "",
-            "InflowAngleMax": "",
-            "TurbulanceIntencityMin": "",
-            "TurbulanceIntencityMax": "",
-            "AlphaLow": "",
-            "AlphaHigh": "",
-            "AlphaMin": "",
-            "AlphaMax": "",
-            "PrecipitationMax": "",
-        },
-        "anemometers": "",
-            "am1": "",
-                "name": "",
-                "suffix": "",
-                "type": "",
-                "height": "",
-                "slope": "",
-                "offset": "",
-            },
-            "am2": "",
-                "name": "",
-                "suffix": "",
-                "type": "",
-                "height": "",
-                "slope": "",
-                "offset": "",
-            },
-            "am3": "",
-                "name": "",
-                "suffix": "",
-                "type": "",
-                "height": "",
-                "slope": "",
-                "offset": "",
-            },
-            "am4": "",
-                "name": "",
-                "suffix": "",
-                "type": "",
-                "height": "",
-                "slope": "",
-                "offset": "",
-            },
-            "am5": "",
-                "name": "",
-                "suffix": "",
-                "type": "",
-                "height": "",
-                "slope": "",
-                "offset": "",
-            }
-        },
-        "vanes": {
-            "dir1": {
-                "name": "dir1",
-                "suffix": "",
-                "type": "",
-                "height": "",
-                "slope": "",
-                "offset": "",
-            },
-            "dir2": "",
-                "name": "",
-                "suffix": "",
-                "type": "",
-                "height": "",
-                "slope": "",
-                "offset": "",
-            }
-        },
-        "thermometers": {
-            "temp1": {
-                "name": "thb_t",
-                "suffix": "",
-                "type": "",
-                "slope": "",
-                "offset": "",
-            }
-        }
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "type": "object",
+  "properties": {
+    "description": {
+      "type": "string"
     },
-    "CMM": {
-        "name": "",
-        "data": {
-            "data_type": "dat",
-            "timeseries_path": "",
-            "timeseries_skiprows": "",
-            "timeseries_header": "",
-            "timeseries_index_col": "",
+    "PMM": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
         },
-        "date_commission": "",
-        "height": "",
-        "altitude": "",
-        "latitude": "",
-        "longitube": "",
-        "filter": "",
-            "type": "",
-            "NumSamplesInterval": "",
-            "WindAvgMin": "",
-            "WindAvgMax": "",
-            "DirAvgMin": "",
-            "DirAvgMax": "",
-            "DirNumSamples": "",
-            "TempMin": "",
-            "HumidityMax": "",
-            "InflowAngleMin": "",
-            "InflowAngleMax": "",
-            "TurbulanceIntencityMin": "",
-            "TurbulanceIntencityMax": "",
-            "AlphaLow": "",
-            "AlphaHigh": "",
-            "AlphaMin": "",
-            "AlphaMax": "",
-            "PrecipitationMax": "",
+        "data": {
+          "type": "object",
+          "properties": {
+            "data_type": {
+              "type": "string"
+            },
+            "timeseries_path": {
+              "type": "string"
+            },
+            "timeseries_skiprows": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "timeseries_header": {
+              "type": "integer"
+            },
+            "timeseries_index_col": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "data_type",
+            "timeseries_path",
+            "timeseries_skiprows",
+            "timeseries_header",
+            "timeseries_index_col"
+          ]
+        },
+        "date_commission": {
+          "type": "string"
+        },
+        "height": {
+          "type": "integer"
+        },
+        "altitude": {
+          "type": "integer"
+        },
+        "latitude": {
+          "type": "string"
+        },
+        "longitube": {
+          "type": "string"
+        },
+        "filter": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "NumSamplesInterval": {
+              "type": "integer"
+            },
+            "WindAvgMin": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "WindAvgMax": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "Dir": {
+              "type": "object",
+              "properties": {
+                "first": {
+                  "type": "object",
+                  "properties": {
+                    "column_name": {
+                      "type": "string"
+                    },
+                    "Min": {
+                      "type": "number"
+                    },
+                    "Max": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "column_name",
+                    "Min",
+                    "Max"
+                  ]
+                }
+              },
+              "required": [
+                "first"
+              ]
+            },
+            "DirNumSamples": {
+              "type": "integer"
+            },
+            "TempMin": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "HumidityMax": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "InflowAngleMin": {
+              "type": "integer"
+            },
+            "InflowAngleMax": {
+              "type": "integer"
+            },
+            "TurbulanceIntencityMin": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "TurbulanceIntencityMax": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "AlphaLow": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "AlphaHigh": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "AlphaMin": {
+              "type": "integer"
+            },
+            "AlphaMax": {
+              "type": "number"
+            },
+            "PrecipitationMax": {
+              "type": "integer"
+            }
+          },
+          "required": [
+            "type",
+            "NumSamplesInterval",
+            "WindAvgMin",
+            "WindAvgMax",
+            "Dir",
+            "DirNumSamples",
+            "TempMin",
+            "HumidityMax",
+            "InflowAngleMin",
+            "InflowAngleMax",
+            "TurbulanceIntencityMin",
+            "TurbulanceIntencityMax",
+            "AlphaLow",
+            "AlphaHigh",
+            "AlphaMin",
+            "AlphaMax",
+          ]
         },
         "anemometers": {
+          "type": "object",
+          "properties": {
             "am1": {
-                "name": "",
-                "suffix": "",
-                "type": "",
-                "height": "",
-                "slope": "",
-                "offset": "",
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "integer"
+                },
+                "slope": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "height",
+                "slope",
+                "offset"
+              ]
             },
-            "am2": "",
-                "name": "",
-                "suffix": "",
-                "type": "",
-                "height": "",
-                "slope": "",
-                "offset": "",
+            "am2": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "integer"
+                },
+                "slope": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "height",
+                "slope",
+                "offset"
+              ]
             },
-            "am3": "",
-                "name": "",
-                "suffix": "",
-                "type": "",
-                "height": "",
-                "slope": "",
-                "offset": "",
+            "am3": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "integer"
+                },
+                "slope": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "height",
+                "slope",
+                "offset"
+              ]
             },
-            "am4": "",
-                "name": "",
-                "suffix": "",
-                "type": "",
-                "height": "",
-                "slope": "",
-                "offset": "",
+            "am4": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "integer"
+                },
+                "slope": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "height",
+                "slope",
+                "offset"
+              ]
             },
-            "am5": "",
-                "name": "",
-                "suffix": "",
-                "type": "",
-                "height": "",
-                "slope": "",
-                "offset": "",
+            "am5": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "integer"
+                },
+                "slope": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "height",
+                "slope",
+                "offset"
+              ]
             }
+          },
+          "required": [
+            "am1",
+            "am2",
+            "am3",
+            "am4",
+            "am5"
+          ]
         },
-        "vanes": "",
-            "dir1": "",
-                "name": "",
-                "suffix": "",
-                "type": "",
-                "height": "",
-                "slope": "",
-                "offset": "",
+        "vanes": {
+          "type": "object",
+          "properties": {
+            "dir1": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "integer"
+                },
+                "slope": {
+                  "type": "integer"
+                },
+                "offset": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "height",
+                "slope",
+                "offset"
+              ]
             },
-            "dir2": "",
-                "name": "",
-                "suffix": "",
-                "type": "",
-                "height": "",
-                "slope": "",
-                "offset": "",
+            "dir2": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "integer"
+                },
+                "slope": {
+                  "type": "integer"
+                },
+                "offset": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "height",
+                "slope",
+                "offset"
+              ]
             }
+          },
+          "required": [
+            "dir1",
+            "dir2"
+          ]
         },
-        "thermometers": "",
-            "temp1": "",
-                "name": "",
-                "suffix": "",
-                "type": "",
-                "slope": "",
-                "offset": "",
+        "thermometers": {
+          "type": "object",
+          "properties": {
+            "temp1": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "slope": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "slope",
+                "offset"
+              ]
             }
+          },
+          "required": [
+            "temp1"
+          ]
         }
+      },
+      "required": [
+        "name",
+        "data",
+        "date_commission",
+        "height",
+        "altitude",
+        "latitude",
+        "longitube",
+        "filter",
+        "anemometers",
+        "vanes",
+        "thermometers"
+      ]
+    },
+    "CMM": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "data": {
+          "type": "object",
+          "properties": {
+            "data_type": {
+              "type": "string"
+            },
+            "timeseries_path": {
+              "type": "string"
+            },
+            "timeseries_skiprows": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "timeseries_header": {
+              "type": "integer"
+            },
+            "timeseries_index_col": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "data_type",
+            "timeseries_path",
+            "timeseries_skiprows",
+            "timeseries_header",
+            "timeseries_index_col"
+          ]
+        },
+        "date_commission": {
+          "type": "string"
+        },
+        "height": {
+          "type": "integer"
+        },
+        "altitude": {
+          "type": "integer"
+        },
+        "latitude": {
+          "type": "string"
+        },
+        "longitube": {
+          "type": "string"
+        },
+        "filter": {
+          "type": "object",
+          "properties": {
+            "type": {
+              "type": "string"
+            },
+            "NumSamplesInterval": {
+              "type": "integer"
+            },
+            "WindAvgMin": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "WindAvgMax": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "Dir": {
+              "type": "object",
+              "properties": {
+                "first": {
+                  "type": "object",
+                  "properties": {
+                    "column_name": {
+                      "type": "string"
+                    },
+                    "Min": {
+                      "type": "number"
+                    },
+                    "Max": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "column_name",
+                    "Min",
+                    "Max"
+                  ]
+                }
+              },
+              "required": [
+                "first"
+              ]
+            },
+            "DirNumSamples": {
+              "type": "integer"
+            },
+            "TempMin": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "HumidityMax": {
+              "type": "null"
+            },
+            "InflowAngleMin": {
+              "type": "integer"
+            },
+            "InflowAngleMax": {
+              "type": "integer"
+            },
+            "TurbulanceIntencityMin": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "TurbulanceIntencityMax": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "number"
+                }
+              ]
+            },
+            "AlphaLow": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "AlphaHigh": {
+              "type": "array",
+              "items": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "AlphaMin": {
+              "type": "integer"
+            },
+            "AlphaMax": {
+              "type": "number"
+            },
+            "PrecipitationMax": {
+              "type": "null"
+            }
+          },
+          "required": [
+            "type",
+            "NumSamplesInterval",
+            "WindAvgMin",
+            "WindAvgMax",
+            "Dir",
+            "DirNumSamples",
+            "TempMin",
+            "HumidityMax",
+            "InflowAngleMin",
+            "InflowAngleMax",
+            "TurbulanceIntencityMin",
+            "TurbulanceIntencityMax",
+            "AlphaLow",
+            "AlphaHigh",
+            "AlphaMin",
+            "AlphaMax",
+            "PrecipitationMax"
+          ]
+        },
+        "anemometers": {
+          "type": "object",
+          "properties": {
+            "am1": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "integer"
+                },
+                "slope": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "height",
+                "slope",
+                "offset"
+              ]
+            },
+            "am2": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "integer"
+                },
+                "slope": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "height",
+                "slope",
+                "offset"
+              ]
+            },
+            "am3": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "integer"
+                },
+                "slope": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "height",
+                "slope",
+                "offset"
+              ]
+            },
+            "am4": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "integer"
+                },
+                "slope": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "height",
+                "slope",
+                "offset"
+              ]
+            },
+            "am5": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "integer"
+                },
+                "slope": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "height",
+                "slope",
+                "offset"
+              ]
+            }
+          },
+          "required": [
+            "am1",
+            "am2",
+            "am3",
+            "am4",
+            "am5"
+          ]
+        },
+        "vanes": {
+          "type": "object",
+          "properties": {
+            "dir1": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "integer"
+                },
+                "slope": {
+                  "type": "integer"
+                },
+                "offset": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "height",
+                "slope",
+                "offset"
+              ]
+            },
+            "dir2": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "height": {
+                  "type": "integer"
+                },
+                "slope": {
+                  "type": "integer"
+                },
+                "offset": {
+                  "type": "number"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "height",
+                "slope",
+                "offset"
+              ]
+            }
+          },
+          "required": [
+            "dir1",
+            "dir2"
+          ]
+        },
+        "thermometers": {
+          "type": "object",
+          "properties": {
+            "temp1": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "suffix": {
+                  "type": "array",
+                  "items": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "string"
+                    }
+                  ]
+                },
+                "type": {
+                  "type": "string"
+                },
+                "slope": {
+                  "type": "number"
+                },
+                "offset": {
+                  "type": "integer"
+                }
+              },
+              "required": [
+                "name",
+                "suffix",
+                "type",
+                "slope",
+                "offset"
+              ]
+            }
+          },
+          "required": [
+            "temp1"
+          ]
+        }
+      },
+      "required": [
+        "name",
+        "data",
+        "date_commission",
+        "height",
+        "altitude",
+        "latitude",
+        "longitube",
+        "filter",
+        "anemometers",
+        "vanes",
+        "thermometers"
+      ]
     }
+  },
+  "required": [
+    "description",
+    "PMM",
+    "CMM"
+  ]
 }
 

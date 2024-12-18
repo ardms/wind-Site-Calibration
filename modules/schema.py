@@ -2,11 +2,11 @@ import re
 import pandas as pd
 import numpy as np
 import logging
+from statsmodels.multivariate.multivariate_ols import _MultivariateOLS
 from rich.logging import RichHandler
 from pydantic import BaseModel
 from pathlib import Path
 from datetime import datetime
-
 
 FORMAT = "%(message)s"
 logging.basicConfig(
@@ -16,25 +16,26 @@ log = logging.getLogger("rich")
 
 
 class MetMast(BaseModel):
-        """
-        A class representing a meteorological mast (Met Mast) with its associated data and methods for processing timeseries data.
-
-        Attributes:
-            id (int): Unique ID based on current timestamp.
-            name (str): Name of the Met Mast.
-            date_commission (datetime, optional): Commission date of the Met Mast.
-            anemometers (dict): Details of anemometers.
-            vanes (dict): Details of wind vanes.
-            thermometers (dict): Details of thermometers.
-            presipitation_names (list, optional): List of precipitation sensor names.
-            presipitation_heights (list, optional): List of precipitation sensor heights.
-            data_type (str, optional): Type of data files (e.g., 'csv').
-            timeseries_path (Path): Path to the directory containing timeseries data files.
-            timeseries_skiprows (list, optional): Rows to skip when reading timeseries data.
-            timeseries_header (int, optional): Header row index for timeseries data.
-            timeseries_index_col (str, optional): Column to set as index in timeseries data.
-            timeseries (list, optional): List to store the timeseries data after processing.
     """
+    A class representing a meteorological mast (Met Mast) with its associated data and methods for processing timeseries data.
+
+    Attributes:
+        id (int): Unique ID based on current timestamp.
+        name (str): Name of the Met Mast.
+        date_commission (datetime, optional): Commission date of the Met Mast.
+        anemometers (dict): Details of anemometers.
+        vanes (dict): Details of wind vanes.
+        thermometers (dict): Details of thermometers.
+        presipitation_names (list, optional): List of precipitation sensor names.
+        presipitation_heights (list, optional): List of precipitation sensor heights.
+        data_type (str, optional): Type of data files (e.g., 'csv').
+        timeseries_path (Path): Path to the directory containing timeseries data files.
+        timeseries_skiprows (list, optional): Rows to skip when reading timeseries data.
+        timeseries_header (int, optional): Header row index for timeseries data.
+        timeseries_index_col (str, optional): Column to set as index in timeseries data.
+        timeseries (list, optional): List to store the timeseries data after processing.
+    """
+
     id: int = pd.to_datetime("now").strftime("%Y%m%d%H%M%S")
     name: str
     date_commission: datetime | None = None
@@ -341,6 +342,7 @@ class Site(BaseModel):
         PMM (MetMast): Peripheral Met Mast object.
         joined_timeseries (list, optional): List to store the joined timeseries data after processing.
     """
+
     id: int = pd.to_datetime("now").strftime("%Y%m%d%H%M%S")
     name: str
     CMM: MetMast
@@ -351,8 +353,8 @@ class Site(BaseModel):
         """
         Join the data from both met masts into one combined dataframe.
         """
-        df = self.CMM.timeseries.join(
-            self.PMM.timeseries, lsuffix="_CMM", rsuffix="_PMM"
+        df = self.PMM.timeseries.join(
+            self.CMM.timeseries, lsuffix="_PMM", rsuffix="_CMM", how="outer"
         )
         self.joined_timeseries = df
 
