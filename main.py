@@ -43,7 +43,10 @@ for metmast in ["PMM", "CMM"]:
     MM.filter_timeseries_add(MM_filter)
     MM.calculate_dir_bins(MM_filter)
     met_masts.append(MM)
+    log.info(f"Met Mast {MM.name} has been added to met_mast list")
 
 site_name = Site(name="Stranoch", PMM=met_masts[0], CMM=met_masts[1])
+log.info(f"Site with name site_name has been created")
 site_name.join_timeseries()
+site_name.linear_regression()
 breakpoint()

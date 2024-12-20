@@ -2,7 +2,7 @@ import re
 import pandas as pd
 import numpy as np
 import logging
-from statsmodels.multivariate.multivariate_ols import _MultivariateOLS
+import statsmodels.formula.api as smf
 from rich.logging import RichHandler
 from pydantic import BaseModel
 from pathlib import Path
@@ -91,9 +91,9 @@ class MetMast(BaseModel):
                 stem = instrument[key]["name"]
                 columns = [stem + "_" + i for i in instrument[key]["suffix"]]
                 for col in columns:
-                    # print(col)
                     slope = instrument[key]["slope"]
                     offset = instrument[key]["offset"]
+                    # print(col, slope, offset)
                     df_concat[col] = df_concat[col] * slope + offset
                     if instrument == self.vanes:
                         df_concat[col] = df_concat[col] % 360
@@ -170,6 +170,7 @@ class MetMast(BaseModel):
             DirAvgMax = section["Max"]
             dir_col = section["column_name"]
             DirMin = 5 * round(DirAvgMin / 5)
+            breakpoint()
             if DirMin > DirAvgMax:
                 DirMax = 360 + DirAvgMax
                 rr = [i % 360 for i in range(int(DirMin), int(DirMax), 10)]
@@ -249,6 +250,7 @@ class MetMast(BaseModel):
                 (df[temp_col] < TempMin[1]) | (df[humidity_col] > HumidityMax[1]),
                 "filter_temp_hum",
             ] = 1
+            # breakpoint()
         else:
             df.loc[
                 (df[temp_col] < TempMin[1]),
@@ -266,7 +268,7 @@ class MetMast(BaseModel):
             DirAvgMax = aa["Max"]
             dir_col = aa["column_name"]
             df.loc[
-                ((df[dir_col] < DirAvgMin) | (df[dir_col] > DirAvgMax)), "filter_sector"
+                ((df[dir_col] > DirAvgMin) | (df[dir_col] < DirAvgMax)), "filter_sector"
             ] = 1
 
         log.info(
@@ -362,7 +364,17 @@ class Site(BaseModel):
         """
         Linear regression using
         """
-        pass
+        df = self.joined_timeseries
+        cols = [i for i in df.columns if re.match("filter_", i)]
+        cols = df.filter(regex="filter_").columns
+        df_filtered = df[(df[cols] == 0).all(axis=1)]
+        y_name = f"{self.CMM.anemometers['am1']['name']}_{self.CMM.anemometers['am1']['suffix'][0]}_CMM"
+        x_name = f"{self.PMM.anemometers['am1']['name']}_{self.PMM.anemometers['am1']['suffix'][0]}_PMM"
+        FORMULA = f"{y_name} ~ {x_name}"
+        breakpoint()
+        md = smf.mixedlm(FORMULA, df_filtered, groups=df_filtered["dir_bin_CMM"])
+        res = md.fit(method=["lbfgs"])
+        print(res)
 
     def site_calibration(self):
         """
